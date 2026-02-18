@@ -81,3 +81,5 @@
 # INSTALL
 
 ## Arrays
+
+This guide will help you set up, build, and run the **Arrays** on your local machine or device.
