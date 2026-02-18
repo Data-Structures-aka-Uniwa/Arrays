@@ -78,6 +78,6 @@
 
 ---
 
-# README
+# INSTALL
 
 ## Arrays
