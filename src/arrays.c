@@ -2,16 +2,16 @@
 #include <stdlib.h>
 #include <time.h>
 
-int serialSearch(int *arr, int N, int num);
+void showMenu(int *arr, int N);
+void printMenu();
+int serialSearch(int *arr, int N, int num, int *counter);
+int binarySearch(int *arr, int lo, int hi, int num, int *counter);
 void quicksort(int *arr, int lo, int hi);
 int pivotPartition(int *arr, int lo, int hi);
 void swap(int *a, int *b);
-int binarySearch(int *arr, int lo, int hi, int num);
 int* mergeWithNewSortedArray(int *arr, int N);
 void printArray(int *arr, int N);
 void storeToFile(int *arr, int N);
-void showMenu(int *arr, int N);
-void printMenu();
 
 int main(int argc, char **argv)
 {
@@ -44,28 +44,168 @@ int main(int argc, char **argv)
     return 0;
 }
 
-int serialSearch(int *arr, int N, int num)
+void showMenu(int *arr, int N)
+{
+    int choice;
+    int pos, num, i;
+    int *copy, *merged;
+    int counter;
+
+    do
+    {
+        printMenu();
+        printf("Enter your choice: ");
+
+        if (scanf("%d", &choice) != 1)
+        {
+            printf("Invalid input.\n");
+            return;
+        }
+
+        printf("\n-----------------------------------------\n");
+
+        switch (choice)
+        {
+            case 1:
+                printf("<< Serial Search >>\n");
+                
+                printf("Number to search: ");
+                scanf("%d", &num);
+
+                counter = 0;
+
+                pos = serialSearch(arr, N, num, &counter);
+
+                if (pos != -1)
+                    printf("Found at position %d\n", pos);
+                else
+                    printf("Not found\n");
+
+                printf("Iterations: %d\n", counter);
+            break;
+            
+            case 2:
+                printf("<< Quicksort >>\n");
+
+                copy = (int*) malloc(N * sizeof(int));
+                if (!copy)
+                {
+                    printf("Error in allocating heap memory.\n");
+                    choice = -1;
+                    break;
+                }
+
+                for (i = 0; i < N; i++)
+                    copy[i] = arr[i];
+
+                quicksort(copy, 0, N - 1);
+                printArray(copy, N);
+
+                free(copy);
+                break;
+            
+            case 3:
+                printf("<< Binary Search >>\n");
+
+                copy = malloc(N * sizeof(int));
+                if (!copy)
+                {
+                    printf("Memory error.\n");
+                    break;
+                }
+
+                for (i = 0; i < N; i++)
+                    copy[i] = arr[i];
+
+                quicksort(copy, 0, N - 1);
+
+                printf("Number to search: ");
+                scanf("%d", &num);
+
+                counter = 0;
+
+                pos = binarySearch(copy, 0, N - 1, num, &counter);
+
+                if (pos != -1)
+                    printf("Found at index %d\n", pos);
+                else
+                    printf("Not found\n");
+
+                printf("Iterations: %d\n", counter);
+
+                free(copy);
+                break;
+
+            case 4:
+                printf("<< Merge 2 sorted arrays >>\n");
+
+                merged = mergeWithNewSortedArray(arr, N);
+                if (!merged)
+                {
+                    choice = -1;
+                    break;
+                }
+
+                printArray(merged, 2 * N);
+                free(merged);
+                break;
+
+            case 5:
+                printf("<< Print array at stdout >>\n");
+
+                printArray(arr, N);
+                break;
+
+            case 6:
+                printf("<< Store array at file >>\n");
+
+                storeToFile(arr, N);
+                break;
+
+            case -1:
+                printf("Exiting program...\n");
+                
+                break;
+
+            default:
+                printf("Invalid choice.\n");
+        }
+
+    } while (choice != -1);
+}
+
+void printMenu()
+{
+    printf("\n");
+    printf("=========================================\n");
+    printf("         ARRAY OPERATIONS MENU\n");
+    printf("=========================================\n");
+    printf("  1  ->  Serial Search\n");
+    printf("  2  ->  Quicksort\n");
+    printf("  3  ->  Binary Search\n");
+    printf("  4  ->  Merge Sort\n");
+    printf("  5  ->  Print Array\n");
+    printf("  6  ->  Store Array to File\n");
+    printf("-----------------------------------------\n");
+    printf(" -1  ->  Exit Program\n");
+    printf("=========================================\n");
+}
+
+int serialSearch(int *arr, int N, int num, int *counter)
 {
     int i;
 
+    *counter = 0;
+
     for (i = 0; i < N; i++)
+    {
+        (*counter)++;   // count every comparison
+
         if (*(arr + i) == num)
             return i;
-     
+    }
+
     return -1;
-}
-
-int* sortArray(int *copy_arr, int N)
-{
-    /* Quicksort */
-    int lo, hi;
-
-    lo = *copy_arr;
-    hi = *(copy_arr + N - 1);
-
-    quicksort(copy_arr, lo, hi);
-
-    return copy_arr;
 }
 
 void swap(int *a, int *b)
@@ -105,22 +245,22 @@ void quicksort(int *arr, int lo, int hi)
     }
 }
 
-int binarySearch(int *arr, int lo, int hi, int num)
+int binarySearch(int *arr, int lo, int hi, int num, int *counter)
 {
-    int mid;
-
     if (lo > hi)
         return -1;
-    
-    mid = lo + (hi - lo) / 2;
+
+    (*counter)++;   // one comparison step
+
+    int mid = lo + (hi - lo) / 2;
 
     if (*(arr + mid) == num)
         return mid;
-    
+
     if (num < *(arr + mid))
-        return binarySearch(arr, lo, mid - 1, num);
+        return binarySearch(arr, lo, mid - 1, num, counter);
     else
-        return binarySearch(arr, mid + 1, hi, num);
+        return binarySearch(arr, mid + 1, hi, num, counter);
 }
 
 int* mergeWithNewSortedArray(int *arr, int N)
@@ -231,147 +371,4 @@ void storeToFile(int *arr, int N)
     fclose(fp);
 
     printf(">> Array successfully stored to '%s'\n", filename);
-}
-
-void showMenu(int *arr, int N)
-{
-    int choice;
-    int pos, num, i;
-    int *copy, *merged;
-
-    do
-    {
-        printMenu();
-        printf("Enter your choice: ");
-
-        if (scanf("%d", &choice) != 1)
-        {
-            printf("Invalid input.\n");
-            return;
-        }
-
-        printf("\n-----------------------------------------\n");
-
-        switch (choice)
-        {
-            case 1:
-        
-                printf("<< Serial Search >>\n");
-                
-                printf("Number to search: ");
-                scanf("%d", &num);
-
-                pos = serialSearch(arr, N, num);
-
-                if (pos != -1)
-                    printf("Found at position %d\n", pos);
-                else
-                    printf("Not found\n");
-
-                break;
-            
-            case 2:
-            
-                printf("<< Quicksort >>\n");
-
-                copy = (int*) malloc(N * sizeof(int));
-                if (!copy)
-                {
-                    printf("Error in allocating heap memory.\n");
-                    choice = -1;
-                    break;
-                }
-
-                for (i = 0; i < N; i++)
-                    copy[i] = arr[i];
-
-                quicksort(copy, 0, N - 1);
-                printArray(copy, N);
-
-                free(copy);
-                break;
-            
-            case 3:
-
-                printf("<< Binary Search >>\n");
-
-                copy = (int*) malloc(N * sizeof(int));
-                if (!copy)
-                {
-                    printf("Error in allocating heap memory.\n");
-                    choice = -1;
-                    break;
-                }
-
-                for (i = 0; i < N; i++)
-                    copy[i] = arr[i];
-
-                quicksort(copy, 0, N - 1);
-
-                printf("Number to search: ");
-                scanf("%d", &num);
-
-                pos = binarySearch(copy, 0, N - 1, num);
-
-                if (pos != -1)
-                    printf("Found in sorted array at index %d\n", pos);
-                else
-                    printf("Not found\n");
-
-                free(copy);
-                break;
-
-            case 4:
-
-                printf("<< Merge 2 sorted arrays >>\n");
-
-                merged = mergeWithNewSortedArray(arr, N);
-                if (!merged)
-                {
-                    choice = -1;
-                    break;
-                }
-
-                printArray(merged, 2 * N);
-                free(merged);
-                break;
-
-            case 5:
-                printf("<< Print array at stdout >>\n");
-
-                printArray(arr, N);
-                break;
-
-            case 6:
-                printf("<< Store array at file >>\n");
-
-                storeToFile(arr, N);
-                break;
-
-            case -1:
-                printf("Exiting program...\n");
-                break;
-
-            default:
-                printf("Invalid choice.\n");
-        }
-
-    } while (choice != -1);
-}
-
-void printMenu()
-{
-    printf("\n");
-    printf("=========================================\n");
-    printf("         ARRAY OPERATIONS MENU\n");
-    printf("=========================================\n");
-    printf("  1  ->  Serial Search\n");
-    printf("  2  ->  Quicksort\n");
-    printf("  3  ->  Binary Search\n");
-    printf("  4  ->  Merge Sort\n");
-    printf("  5  ->  Print Array\n");
-    printf("  6  ->  Store Array to File\n");
-    printf("-----------------------------------------\n");
-    printf(" -1  ->  Exit Program\n");
-    printf("=========================================\n");
 }
