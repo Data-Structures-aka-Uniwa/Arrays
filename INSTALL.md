@@ -92,7 +92,16 @@ This guide explains how to set up, build, and run the project on your local mach
 
 - A **C compiler** such as `gcc`
 
-### 1.2 Steps
+### 1.2 Clone the Repository
+
+Open your terminal or command prompt and run:
+
+```bash
+git clone https://github.com/Data-Structures-aka-Uniwa/Arrays.git
+cd Arrays/src
+```
+
+### 1.3 Steps
 1. Save the program as:
 ```bash
 main.c
